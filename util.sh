@@ -41,9 +41,9 @@ html(lang="en")
 
 build () {
 	echo "[Util] Building files..."
-	npx babel src/scripts/ -d public/js/
-	npx sass src/styles/:public/css/
-	npx pug src/ -o public/
+	npx babel src/ -d app/
+	npx sass src/:app/
+	npx pug src/ -o app/
 }
 
 help () {
@@ -57,28 +57,33 @@ setup () {
 	npm -D i $babel $react $sass $pug $http_server
 
 	# create file structure
-	mkdir -p src/{scripts,styles}
-	mkdir -p public/{css,js}
+	mkdir -p src/public/{css,js}
+	mkdir -p app/public/{css,js}
 
 	# create basic files
 	IFS='`'
 	echo $babel_config > .babelrc
-	echo $pug_file > ./src/index.pug
+	echo $pug_file > ./src/public/index.pug
 	unset IFS
 
-	touch src/scripts/main.jsx
-	touch src/styles/style.sass
+	touch src/public/js/main.jsx
+	touch src/public/css/style.sass
 	
-	wget -P public/css/ https://necolas.github.io/normalize.css/8.0.0/normalize.css
+	wget -P app/public/css/ https://necolas.github.io/normalize.css/8.0.0/normalize.css
 }
 
 start () {
-	echo "[Util] Starting HTTP server..."
-	npx http-server &
+	echo "[Util] Starting server..."
+	npx http-server
 }
 
 watch () {
 	echo "[Util] Watching files for updates..."
+	trap "kill 0" EXIT
+	npx babel --verbose -w src/ -d app/ &
+	npx sass --watch src/:app/ &
+	npx pug -w src/ -o app/ &
+	wait
 }
 
 
